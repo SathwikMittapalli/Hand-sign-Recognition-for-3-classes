@@ -1,0 +1,61 @@
+import os
+import cv2
+
+DATA_DIR = './data'
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
+
+number_of_classes = 3
+dataset_size = 100
+
+# Open the camera (Check the camera index)
+cap = cv2.VideoCapture(0)  # Try index 0 if 2 doesn't work
+
+# Check if the camera opened successfully
+if not cap.isOpened():
+    print("Error: Could not open camera.")
+    exit()
+
+for j in range(number_of_classes):
+    # Create a directory for each class if it doesn't exist
+    class_dir = os.path.join(DATA_DIR, str(j))
+    if not os.path.exists(class_dir):
+        os.makedirs(class_dir)
+
+    print('Collecting data for class {}'.format(j))
+
+    # Wait for the user to be ready
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Failed to grab frame.")
+            break
+        
+        # Display message and frame
+        cv2.putText(frame, 'Ready? Press "Q" to start :)', (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3, cv2.LINE_AA)
+        cv2.imshow('frame', frame)
+        
+        # Press 'q' to start collecting images
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break
+
+    counter = 0
+    while counter < dataset_size:
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Failed to grab frame.")
+            break
+        
+        # Display the frame
+        cv2.imshow('frame', frame)
+        cv2.waitKey(25)
+        
+        # Save the captured image
+        img_path = os.path.join(class_dir, '{}.jpg'.format(counter))
+        cv2.imwrite(img_path, frame)
+        
+        counter += 1
+
+# Release the camera and close all windows
+cap.release()
+cv2.destroyAllWindows()
